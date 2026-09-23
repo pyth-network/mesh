@@ -835,7 +835,7 @@ pub struct DeleteTransaction<'info> {
             b"transaction"
         ], bump = transaction.bump,
         constraint = transaction.instruction_index == 0 @GraphsError::TransactionHasInstructions,
-        constraint = transaction.ms == PRICE_FEED_COUNCIL @GraphsError::InvalidInstructionAccount,
+        constraint = transaction.ms == PRICE_FEED_COUNCIL @GraphsError::OnlyPriceFeedCouncilCanDeleteTransactions,
         close = treasury,
     )]
     pub transaction: Account<'info, MsTransaction>,
@@ -846,8 +846,6 @@ pub struct DeleteTransaction<'info> {
         address = PYTH_DAO_TREASURY @GraphsError::InvalidRentCollector,
     )]
     pub treasury: UncheckedAccount<'info>,
-
-    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -860,7 +858,7 @@ pub struct DeleteInstruction<'info> {
             &transaction.transaction_index.to_le_bytes(),
             b"transaction"
         ], bump = transaction.bump,
-        constraint = transaction.ms == PRICE_FEED_COUNCIL @GraphsError::InvalidInstructionAccount,
+        constraint = transaction.ms == PRICE_FEED_COUNCIL @GraphsError::OnlyPriceFeedCouncilCanDeleteTransactions,
     )]
     pub transaction: Account<'info, MsTransaction>,
 
@@ -883,8 +881,6 @@ pub struct DeleteInstruction<'info> {
         address = PYTH_DAO_TREASURY @GraphsError::InvalidRentCollector,
     )]
     pub treasury: UncheckedAccount<'info>,
-
-    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
