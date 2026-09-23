@@ -7,7 +7,7 @@ use errors::*;
 pub mod errors;
 
 // INSERT PROGRAM ID
-declare_id!("");
+declare_id!("SMPLVC8MxZ5Bf5EfF7PaMiTCxoBAcmkbM2vkrvMK8ho");
 
 #[program]
 pub mod mesh {
@@ -46,7 +46,7 @@ pub mod mesh {
             threshold,
             create_key,
             members,
-            *ctx.bumps.get("multisig").unwrap(),
+            ctx.bumps.multisig,
         )
     }
 
@@ -117,7 +117,7 @@ pub mod mesh {
                 ctx.program_id,
                 ctx.accounts,
                 ctx.remaining_accounts,
-                ctx.bumps.clone()
+                MsAuthBumps::default(),
             ), old_member
         )?;
         change_threshold(ctx, new_threshold)
@@ -133,7 +133,7 @@ pub mod mesh {
                 ctx.program_id,
                 ctx.accounts,
                 ctx.remaining_accounts,
-                ctx.bumps.clone()
+                MsAuthReallocBumps::default(),
             ), new_member
         )?;
 
@@ -202,7 +202,7 @@ pub mod mesh {
             ctx.accounts.creator.key(),
             ms.key(),
             ms.transaction_index,
-            *ctx.bumps.get("transaction").unwrap(),
+            ctx.bumps.transaction,
             authority_index,
             authority_bump,
         )
@@ -248,7 +248,7 @@ pub mod mesh {
         ctx.accounts.instruction.init(
             tx.instruction_index,
             incoming_instruction,
-            *ctx.bumps.get("instruction").unwrap(),
+            ctx.bumps.instruction,
             ix_authority_index,
             ix_authority_bump,
             ix_authority_type,
