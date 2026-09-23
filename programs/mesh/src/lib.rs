@@ -1,4 +1,4 @@
-use anchor_lang::{prelude::*, solana_program::instruction::Instruction};
+use anchor_lang::{prelude::*, solana_program::{instruction::Instruction, pubkey::Pubkey}};
 
 use state::mesh::*;
 pub mod state;
@@ -8,6 +8,9 @@ pub mod errors;
 
 // INSERT PROGRAM ID
 declare_id!("SMPLVC8MxZ5Bf5EfF7PaMiTCxoBAcmkbM2vkrvMK8ho");
+
+const PRICE_FEED_COUNCIL : Pubkey = pubkey!("92hQkq8kBgCUcF9yWN8URZB9RTmA4mZpDGtbiAWA74Z8");
+const PYTH_DAO_TREASURY : Pubkey = pubkey!("Gx4MBPb1vqZLJajZmsKLg8fGw9ErhoKsR8LeKcCKFyak");
 
 #[program]
 pub mod mesh {
@@ -537,7 +540,16 @@ pub mod mesh {
         ms.external_authority = new_authority;
         Ok(())
     }
-    
+
+    pub fn delete_transaction(_ctx: Context<DeleteTransaction>) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn delete_instruction(ctx: Context<DeleteInstruction>) -> Result<()> {
+        let tx =  &mut ctx.accounts.transaction;
+        tx.instruction_index = tx.instruction_index.saturating_sub(1);
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -810,6 +822,69 @@ pub struct ExecuteInstruction<'info> {
 
     #[account(mut)]
     pub member: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DeleteTransaction<'info> {
+    #[account(
+        mut,
+        seeds = [
+            b"squad",
+            PRICE_FEED_COUNCIL.as_ref(),
+            &transaction.transaction_index.to_le_bytes(),
+            b"transaction"
+        ], bump = transaction.bump,
+        constraint = transaction.instruction_index == 0 @GraphsError::TransactionHasInstructions,
+        constraint = transaction.ms == PRICE_FEED_COUNCIL @GraphsError::InvalidInstructionAccount,
+        close = treasury,
+    )]
+    pub transaction: Account<'info, MsTransaction>,
+
+    /// CHECK: the dao treasury receives the rent
+    #[account(
+        mut,
+        address = PYTH_DAO_TREASURY @GraphsError::InvalidRentCollector,
+    )]
+    pub treasury: UncheckedAccount<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct DeleteInstruction<'info> {
+    #[account(
+        mut,
+        seeds = [
+            b"squad",
+            PRICE_FEED_COUNCIL.as_ref(),
+            &transaction.transaction_index.to_le_bytes(),
+            b"transaction"
+        ], bump = transaction.bump,
+        constraint = transaction.ms == PRICE_FEED_COUNCIL @GraphsError::InvalidInstructionAccount,
+    )]
+    pub transaction: Account<'info, MsTransaction>,
+
+    #[account(
+        mut,
+        seeds = [
+            b"squad",
+            transaction.key().as_ref(),
+            &transaction.instruction_index.to_le_bytes(),
+            b"instruction"
+        ], bump = instruction.bump,
+        constraint = instruction.instruction_index == transaction.instruction_index @GraphsError::InstructionIsNotLast,
+        close = treasury,
+    )]
+    pub instruction: Account<'info, MsInstruction>,
+
+    /// CHECK: the dao treasury receives the rent
+    #[account(
+        mut,
+        address = PYTH_DAO_TREASURY @GraphsError::InvalidRentCollector,
+    )]
+    pub treasury: UncheckedAccount<'info>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
