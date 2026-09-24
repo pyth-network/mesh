@@ -120,7 +120,7 @@ pub mod mesh {
                 ctx.program_id,
                 ctx.accounts,
                 ctx.remaining_accounts,
-                MsAuthBumps::default(),
+                MsAuthBumps {},
             ), old_member
         )?;
         change_threshold(ctx, new_threshold)
@@ -136,7 +136,7 @@ pub mod mesh {
                 ctx.program_id,
                 ctx.accounts,
                 ctx.remaining_accounts,
-                MsAuthReallocBumps::default(),
+                MsAuthReallocBumps {},
             ), new_member
         )?;
 
