@@ -16,5 +16,9 @@ pub enum GraphsError {
     MaxMembersReached,
     EmptyMembers,
     PartialExecution,
-    InvalidExternalAuthority
+    InvalidExternalAuthority,
+    InvalidRentCollector,
+    InstructionIsNotLast,
+    TransactionHasInstructions,
+    OnlyPriceFeedCouncilCanDeleteTransactions
 }
